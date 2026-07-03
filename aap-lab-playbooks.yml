@@ -1,0 +1,34 @@
+# playbooks/aap-lab-playbooks.yml
+---
+- name: Linux baseline validation
+  hosts: all
+  become: true
+  gather_facts: true
+
+  tasks:
+    - name: Show target identity
+      ansible.builtin.debug:
+        msg:
+          - "hostname={{ ansible_hostname }}"
+          - "fqdn={{ ansible_fqdn }}"
+          - "os={{ ansible_distribution }} {{ ansible_distribution_version }}"
+          - "kernel={{ ansible_kernel }}"
+          - "user={{ ansible_user_id }}"
+
+    - name: Confirm sudo works
+      ansible.builtin.command: whoami
+      register: whoami_result
+      changed_when: false
+
+    - name: Print sudo result
+      ansible.builtin.debug:
+        var: whoami_result.stdout
+
+    - name: Check root filesystem
+      ansible.builtin.command: df -h /
+      register: root_df
+      changed_when: false
+
+    - name: Print root filesystem
+      ansible.builtin.debug:
+        var: root_df.stdout_lines

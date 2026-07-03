@@ -1,0 +1,31 @@
+# playbooks/motd_managed.yml
+---
+- name: Manage MOTD on lab host
+  hosts: all
+  become: true
+  gather_facts: true
+
+  tasks:
+    - name: Deploy managed MOTD
+      ansible.builtin.copy:
+        dest: /etc/motd.d/aap-lab
+        content: |
+          Managed by Ansible Automation Platform
+          Host: {{ ansible_fqdn }}
+          OS: {{ ansible_distribution }} {{ ansible_distribution_version }}
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Validate MOTD file exists
+      ansible.builtin.stat:
+        path: /etc/motd.d/aap-lab
+      register: motd_file
+
+    - name: Assert MOTD is present
+      ansible.builtin.assert:
+        that:
+          - motd_file.stat.exists
+          - motd_file.stat.pw_name == 'root'
+          - motd_file.stat.gr_name == 'root'
+          - motd_file.stat.mode == '0644'

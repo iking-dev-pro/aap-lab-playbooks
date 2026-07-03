@@ -1,0 +1,22 @@
+# playbooks/motd_rollback.yml
+---
+- name: Roll back MOTD managed by AAP
+  hosts: all
+  become: true
+  gather_facts: false
+
+  tasks:
+    - name: Remove managed MOTD file
+      ansible.builtin.file:
+        path: /etc/motd.d/aap-lab
+        state: absent
+
+    - name: Validate MOTD file is absent
+      ansible.builtin.stat:
+        path: /etc/motd.d/aap-lab
+      register: motd_file
+
+    - name: Assert MOTD rollback succeeded
+      ansible.builtin.assert:
+        that:
+          - not motd_file.stat.exists
