@@ -1,0 +1,24 @@
+---
+- name: Linux baseline validation
+  hosts: all
+  become: true
+  gather_facts: true
+
+  tasks:
+    - name: Show target identity
+      ansible.builtin.debug:
+        msg:
+          - "hostname={{ ansible_hostname }}"
+          - "fqdn={{ ansible_fqdn }}"
+          - "os={{ ansible_distribution }} {{ ansible_distribution_version }}"
+          - "kernel={{ ansible_kernel }}"
+
+    - name: Confirm privilege escalation
+      ansible.builtin.command: whoami
+      register: whoami_result
+      changed_when: false
+
+    - name: Assert sudo became root
+      ansible.builtin.assert:
+        that:
+          - whoami_result.stdout == "root"
